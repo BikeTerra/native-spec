@@ -23,7 +23,7 @@ Build a cross-platform (Windows / Mac / iOS / Android) app using `Tauri 2` and `
 *The high-level goals of the app:*
 
 * Quickly and easily pair Bluetooth devices (incl. multiple devices at once)
-* Automatic handling of dropouts -- automatic advertisement listener with timeout + reconnect
+* Automatic handling of dropouts -- advertisement listener with timeout + reconnect
 * Persistent bluetooth connections across webview pageloads
 
 ## Bluetooth API
@@ -45,7 +45,7 @@ emit('scan', {status: 'stopped'});
 Connect to one or more devices, handle dropouts, and listen for notifications for characteristics containing `notify` or `indicate` properties.
 
 ```js
-emit('connect', {status: 'connecting', data: {id: <deviceId>, reconnecting: false}}); // reconnecting = dropout handling
+emit('connect', {status: 'connecting', data: {id: <deviceId>, retrying: false}});
 emit('connect', {status: 'success', data: {id: <deviceId>, services: <services>}});
 emit('connect', {status: 'fail', data: {id: <deviceId>, reason: <string>}});
 emit('notifyValue', {id: <deviceId>, service: <serviceUuid>, characteristic: <characteristicUuid>, value: <value>});
@@ -55,8 +55,8 @@ Example of `<services>`:
 
 ```js
 {
-    '00001818-0000-1000-8000-00805f9b34fb': [
-        '00002a63-0000-1000-8000-00805f9b34fb'
+    '00001818-0000-1000-8000-00805f9b34fb': [ // parent = service UUID
+        '00002a63-0000-1000-8000-00805f9b34fb' // child = characteristic UUID
     ],
     '00001826-0000-1000-8000-00805f9b34fb': [
         '00002ad2-0000-1000-8000-00805f9b34fb'
@@ -65,7 +65,7 @@ Example of `<services>`:
 }
 ```
 
-The outer UUIDs are `services`, the inner ones are `characteristics`. Each characteristic contains properties (read, write, notify, etc)
+Every bluetooth characteristic contains properties (read, write, writeWithResponse, notify, etc)
 
 ### disconnect(deviceIds)
 
@@ -76,9 +76,9 @@ emit('disconnect', {status: 'success', data: {id: <deviceId>}});
 emit('disconnect', {status: 'fail', data: {id: <deviceId>, reason: <string>}});
 ```
 
-### sendCommand(deviceId, serviceUuid, characteristicUuid, command)
+### writeValue(deviceId, serviceUuid, characteristicUuid, value)
 
-Write to a characteristic, returning response data. The `command` will contain a Uint8Array value.
+Write to a characteristic. The `value` will be a Uint8Array. The response will depend on whether the characteristic has a `writeWithoutResponse` property.
 
 ### readValue(deviceId, serviceUuid, characteristicUuid)
 
