@@ -36,7 +36,7 @@ Run a 10 second scan for devices. Fire off an event for each detected device tha
 
 ```js
 emit('scan', {status: 'started'});
-emit('scan', {status: 'device-found', data: {id: <deviceId>, name: <deviceName>}});
+emit('scan', {status: 'device-found', id: <deviceId>, name: <deviceName>});
 emit('scan', {status: 'stopped'});
 ```
 
@@ -45,9 +45,9 @@ emit('scan', {status: 'stopped'});
 Connect to one or more devices, handle dropouts, and listen for notifications for characteristics containing `notify` or `indicate` properties.
 
 ```js
-emit('connect', {status: 'connecting', data: {id: <deviceId>, retrying: false}});
-emit('connect', {status: 'success', data: {id: <deviceId>, services: <services>}});
-emit('connect', {status: 'fail', data: {id: <deviceId>, reason: <string>}});
+emit('connect', {status: 'connecting', id: <deviceId>, retrying: false});
+emit('connect', {status: 'success', id: <deviceId>, services: <services>});
+emit('connect', {status: 'fail', id: <deviceId>, reason: <string>});
 emit('notifyValue', {id: <deviceId>, service: <serviceUuid>, characteristic: <characteristicUuid>, value: <value>});
 ```
 
@@ -72,8 +72,8 @@ Every bluetooth characteristic contains properties (read, write, writeWithRespon
 Disconnect from one or more devices.
 
 ```js
-emit('disconnect', {status: 'success', data: {id: <deviceId>}});
-emit('disconnect', {status: 'fail', data: {id: <deviceId>, reason: <string>}});
+emit('disconnect', {status: 'success', id: <deviceId>});
+emit('disconnect', {status: 'fail', id: <deviceId>, reason: <string>});
 ```
 
 ### writeValue(deviceId, serviceUuid, characteristicUuid, value)
