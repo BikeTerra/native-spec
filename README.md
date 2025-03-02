@@ -23,8 +23,8 @@ Build a cross-platform (Windows / Mac / iOS / Android) app using `Tauri 2` and `
 *The high-level goals of the app:*
 
 * Quickly and easily pair Bluetooth devices (incl. multiple devices at once)
-* Automatic handling of dropouts (i.e. automatic advertisement listening + reconnect)
-* Persistent bluetooth connections across webview pageloads (inherent to native, not supported by web-bluetooth)
+* Automatic handling of dropouts -- automatic advertisement listener with timeout + reconnect
+* Persistent bluetooth connections across webview pageloads
 
 ## Bluetooth API
 
@@ -42,13 +42,13 @@ emit('scan', {status: 'stopped'});
 
 ### connect(deviceIds)
 
-Connect to one or more devices, handle device dropouts, and listen for notifications for characteristics containing `notify` or `indicate` properties.
+Connect to one or more devices, handle dropouts, and listen for notifications for characteristics containing `notify` or `indicate` properties.
 
 ```js
 emit('connect', {status: 'connecting', data: {id: <deviceId>, reconnecting: false}}); // reconnecting = dropout handling
 emit('connect', {status: 'success', data: {id: <deviceId>, services: <services>}});
 emit('connect', {status: 'fail', data: {id: <deviceId>, reason: <string>}});
-emit('notifyValue', {});
+emit('notifyValue', {id: <deviceId>, service: <serviceUuid>, characteristic: <characteristicUuid>, value: <value>});
 ```
 
 Example of `<services>`:
@@ -76,19 +76,10 @@ emit('disconnect', {status: 'success', data: {id: <deviceId>}});
 emit('disconnect', {status: 'fail', data: {id: <deviceId>, reason: <string>}});
 ```
 
-### sendCommand(deviceId, command, hasResponse = false)
+### sendCommand(deviceId, serviceUuid, characteristicUuid, command)
 
-Send a command to the bluetooth device, optionally waiting for a response. The `command` will contain a Uint8Array.
-
-```js
-emit('sendCommand', {data: {id: <deviceId>, response: <responseData>}});
-```
+Write to a characteristic, returning response data. The `command` will contain a Uint8Array value.
 
 ### readValue(deviceId, serviceUuid, characteristicUuid)
 
-Read the value from a characteristic.
-
-```js
-emit('readValue', {status: 'success', value: <value>});
-emit('readValue', {status: 'fail', reason: <string>});
-```
+Read and return the value from a characteristic.
