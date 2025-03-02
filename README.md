@@ -82,4 +82,4 @@ Write to a characteristic. The `value` will be a Uint8Array. The response will d
 
 ### readValue(deviceId, serviceUuid, characteristicUuid)
 
-Read and return the value from a characteristic.
+Read and return the value from a characteristic. We currently only use this to grab battery percentages.
