@@ -32,44 +32,46 @@ Using `btleplug`, here are the envisioned methods:
 
 ### scan(filterUuids)
 
-Run a 10 second scan for devices. Fire off an event for each detected device that matches one of the `filterUuids`. Store the `filterUuids` array for later.
+Run a 10 second scan for devices. Fire off an event for each detected device containing 1 or more services matching `filterUuids`. Store the `filterUuids` array for later.
 
 ```js
+// events sent from Tauri/Rust to the webview
 emit('scan', {status: 'started'});
 emit('scan', {status: 'device-found', id: <deviceId>, name: <deviceName>});
 emit('scan', {status: 'stopped'});
 ```
 
+`filterUuids` contains UUIDs for both `services` and `characteristics`. We'd ideally also use `filterUuids` in the connect() method as well, to include only matching service characteristics.
+
 ### connect(deviceIds)
 
-Connect to one or more devices, handle dropouts, and listen for notifications for characteristics containing `notify` or `indicate` properties.
+Connect to one or more devices, handle dropouts, call `_listen` for any relevant characteristics.
 
 ```js
 emit('connect', {status: 'connecting', id: <deviceId>, retrying: false});
 emit('connect', {status: 'success', id: <deviceId>, services: <services>});
 emit('connect', {status: 'fail', id: <deviceId>, reason: <string>});
-emit('notifyValue', {id: <deviceId>, service: <serviceUuid>, characteristic: <characteristicUuid>, value: <value>});
 ```
 
 Example of `<services>`:
 
 ```js
 {
-    '00001818-0000-1000-8000-00805f9b34fb': [ // parent = service UUID
-        '00002a63-0000-1000-8000-00805f9b34fb' // child = characteristic UUID
-    ],
-    '00001826-0000-1000-8000-00805f9b34fb': [
-        '00002ad2-0000-1000-8000-00805f9b34fb'
-        '00002ad9-0000-1000-8000-00805f9b34fb'
-    ]
+    '00001818-0000-1000-8000-00805f9b34fb': { // service UUID
+        '00002a63-0000-1000-8000-00805f9b34fb': {props: ['notify']} // {<characteristicUUID>: props, value: <valueIfHasReadProp>}
+    },
+    '00001826-0000-1000-8000-00805f9b34fb': {
+        '00002ad2-0000-1000-8000-00805f9b34fb': {props: ['read', 'notify', 'writeWithResponse'], value: <Uint8Array>},
+        '00002ad9-0000-1000-8000-00805f9b34fb': {props: ['notify']}
+    }
 }
 ```
 
-Every bluetooth characteristic contains properties (read, write, writeWithResponse, notify, etc)
+Bluetooth characteristics contain property flags to indicate which features are available (read, write, writeWithResponse, notify, etc)
 
 ### disconnect(deviceIds)
 
-Disconnect from one or more devices.
+Disconnect from one or more devices. Call `_unlisten` for any relevant characteristics.
 
 ```js
 emit('disconnect', {status: 'success', id: <deviceId>});
@@ -82,4 +84,16 @@ Write to a characteristic. The `value` will be a Uint8Array. The response will d
 
 ### readValue(deviceId, serviceUuid, characteristicUuid)
 
-Read and return the value from a characteristic. We currently only use this to grab battery percentages.
+Read and return the value from a characteristic. Mainly useful for periodically grabbing updated battery percentages.
+
+### _listen(characteristic)
+
+(Internal) called from `connect`. If the characteristic has "notify" or "indicate" properties, then listen for BLE notifications and fire an event when detected:
+
+```js
+emit('notifyValue', {id: <deviceId>, service: <serviceUuid>, characteristic: <characteristicUuid>, value: <value>});
+```
+
+### _unlisten(characteristic)
+
+(Internal) called from `disconnect`. Stop BLE notifications for this characteristic if in use.
