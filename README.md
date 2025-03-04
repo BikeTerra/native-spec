@@ -5,7 +5,7 @@ The purpose of this app is to provide a better Bluetooth experience for users.
 Biketerra currently relies on `web-bluetooth` (built into Chromium-based browsers), which has major limitations:
 
 * Scanning / pairing is extremely slow vs. native
-* Users can only select a single device at a time
+* Users need to pair devices one-at-a-time (very inconvenient for users needing to pair numerous devices)
 * Users need to manually re-pair all devices on every pageload
 * No ability to "remember" devices
 * A 10 year-old [Chromium bug](https://issues.chromium.org/issues/40502943) causes `web-bluetooth` to crash when unable to reconnect after dropouts
