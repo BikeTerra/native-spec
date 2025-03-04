@@ -1,5 +1,13 @@
 # Biketerra - Tauri app spec
 
+Biketerra is a web-based 3D virtual cycling app.
+
+Users pair their bluetooth fitness devices (smart trainer, power meter, heart rate monitor, etc). Biketerra displays the various metrics, and uses the power readings to "move" the user's avatar along the route. It also supports 2-way communication with smart trainers, for things like adjusting resistance based on terrain grade.
+
+<img src="https://uploads.biketerra.com/homepage/v03/workouts.webp" alt="Biketerra 3D" style="width: 48rem" />
+
+## Purpose of the native app
+
 The purpose of this app is to provide a better Bluetooth experience for users.
 
 Biketerra currently relies on `web-bluetooth` (built into Chromium-based browsers), which has major limitations:
